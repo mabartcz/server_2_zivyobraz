@@ -28,6 +28,7 @@ async fn main() -> Result<()> {
     println!("\n🔄 Starting monitoring loop...\n");
 
     loop {
+        println!("Time: {}", chrono::Local::now().format("%Y-%m-%d %H:%M:%S"));
         // Get CPU temperature
         match monitor.get_cpu_temperature() {
             Some(cpu_temp) => {

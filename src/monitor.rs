@@ -22,23 +22,60 @@ impl SystemMonitor {
 
         println!("Available components:");
         for component in &self.components {
-            println!(" - {}: {:.1}°C", component.label(), component.temperature()?);
-        }
-
-        // Look for CPU-related temperature sensors
-        for component in &self.components {
-            let label = component.label().to_lowercase();
-
-            // Check for common CPU temperature sensor names
-            if label.contains("cpu") ||
-               label.contains("core") ||
-               label.contains("processor") ||
-               label.contains("package") {
-                return Some(component.temperature()?);
+            if let Some(temp) = component.temperature() {
+                println!(" - {}: {:.1}°C", component.label(), temp);
             }
         }
 
-        // If no CPU-specific sensor found, return the first available temperature
-        self.components.iter().next().map(|component| component.temperature())?
+        // Priority 1: Look for CPU package temperature (whole CPU)
+        for component in &self.components {
+            let label = component.label().to_lowercase();
+            if label.contains("package") && label.contains("cpu") ||
+               label.contains("package id") {
+                if let Some(temp) = component.temperature() {
+                    println!("🎯 Using CPU package temperature: {:.1}°C", temp);
+                    return Some(temp);
+                }
+            }
+        }
+
+        // Priority 2: Look for other CPU-related temperature sensors
+        for component in &self.components {
+            let label = component.label().to_lowercase();
+            if label.contains("cpu") ||
+               label.contains("processor") {
+                if let Some(temp) = component.temperature() {
+                    println!("🎯 Using CPU sensor temperature: {:.1}°C", temp);
+                    return Some(temp);
+                }
+            }
+        }
+
+        // Priority 3: Average of all core temperatures if no package temp found
+        let mut core_temps = Vec::new();
+        for component in &self.components {
+            let label = component.label().to_lowercase();
+            if label.contains("core") {
+                if let Some(temp) = component.temperature() {
+                    core_temps.push(temp);
+                }
+            }
+        }
+
+        if !core_temps.is_empty() {
+            let avg_temp = core_temps.iter().sum::<f32>() / core_temps.len() as f32;
+            println!("🎯 Using average core temperature: {:.1}°C", avg_temp);
+            return Some(avg_temp);
+        }
+
+        // Priority 4: If no CPU-specific sensor found, return the first available temperature
+        for component in &self.components {
+            if let Some(temp) = component.temperature() {
+                println!("🎯 Using first available temperature: {:.1}°C", temp);
+                return Some(temp);
+            }
+        }
+
+        None
     }
 }
