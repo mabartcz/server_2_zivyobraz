@@ -5,6 +5,7 @@ A simple Rust application that monitors CPU temperature and sends it to the Živ
 ## Setup
 
 1. **Configure environment:**
+   .env
    ```bash
    # Set your import key and server URL
    set IMPORT_KEY=your_key_here
@@ -12,7 +13,7 @@ A simple Rust application that monitors CPU temperature and sends it to the Živ
    set SEND_INTERVAL_MINUTES=1
    ```
 
-2. **Run:**
+3. **Run:**
    ```bash
    cargo run
    ```
@@ -20,5 +21,4 @@ A simple Rust application that monitors CPU temperature and sends it to the Živ
 ## What it does
 
 - Monitors CPU package temperature using system sensors
-- Sends temperature data to Živý obraz every minute
-- Works on Windows with coretemp sensors
+- Sends temperature data to Živý obraz every x minutes
